@@ -1,4 +1,4 @@
-const express = require('express');
+      const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const sequelize = require('./config/db');
@@ -10,10 +10,18 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration for production
+// CORS configuration - UPDATED
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://idealink-frontend.vercel.app',
+    'https://idealink-frontend-git-main-annita-cherutos-projects.vercel.app',
+    'https://idealink-frontend-anitacheru.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
