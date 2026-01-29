@@ -1,16 +1,17 @@
-      const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const sequelize = require('./config/db');
 const authRoutes = require('./routes/auth');
 const ideaRoutes = require('./routes/idea');
 const interestRoutes = require('./routes/interest');
+const commentRoutes = require('./routes/comment');
 
 dotenv.config();
 
 const app = express();
 
-// CORS configuration - UPDATED
+// CORS configuration
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -30,6 +31,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/idea", ideaRoutes);
 app.use("/api/interest", interestRoutes);
+app.use("/api/comment", commentRoutes);
 
 app.get("/", (req, res) => res.send("IdeaLink API is running..."));
 
