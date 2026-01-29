@@ -11,7 +11,7 @@ const {
   createComment,
   updateComment,
   deleteComment
-} = require('../controllers/commentController');
+} = require('../controller/commentcontroller');
 
 // Get all comments for an idea (public)
 router.get('/idea/:ideaId', getCommentsByIdea);
