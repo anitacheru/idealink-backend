@@ -1,17 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const authenticate = require('../middleware/auth'); // FIXED import
 
-// ✅ import middleware correctly
-const authenticate = require('../middleware/auth'); 
-// OR use { authenticate } depending on export
-
-// ✅ correct controller path & casing
 const {
   getCommentsByIdea,
   createComment,
   updateComment,
   deleteComment
-} = require('../controller/commentcontroller');
+} = require('../controllers/commentController'); // Ensure correct path
 
 // Get all comments for an idea (public)
 router.get('/idea/:ideaId', getCommentsByIdea);

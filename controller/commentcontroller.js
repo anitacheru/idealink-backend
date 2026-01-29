@@ -28,13 +28,9 @@ const createComment = async (req, res) => {
     const userId = req.user.id;
     const authorRole = req.user.role;
 
-    // Validate idea exists
     const idea = await Idea.findByPk(ideaId);
-    if (!idea) {
-      return res.status(404).json({ error: 'Idea not found' });
-    }
+    if (!idea) return res.status(404).json({ error: 'Idea not found' });
 
-    // Create comment
     const comment = await Comment.create({
       content,
       ideaId,
@@ -42,14 +38,9 @@ const createComment = async (req, res) => {
       authorRole
     });
 
-    // Fetch comment with user data
     const commentWithUser = await Comment.findByPk(comment.id, {
       include: [
-        { 
-          model: User, 
-          as: 'user', 
-          attributes: ['id', 'username', 'role'] 
-        }
+        { model: User, as: 'user', attributes: ['id', 'username', 'role'] }
       ]
     });
 
@@ -67,12 +58,8 @@ const updateComment = async (req, res) => {
     const userId = req.user.id;
 
     const comment = await Comment.findByPk(id);
-    
-    if (!comment) {
-      return res.status(404).json({ error: 'Comment not found' });
-    }
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
-    // Check if user owns the comment
     if (comment.userId !== userId) {
       return res.status(403).json({ error: 'You can only edit your own comments' });
     }
@@ -80,14 +67,9 @@ const updateComment = async (req, res) => {
     comment.content = content;
     await comment.save();
 
-    // Fetch updated comment with user data
     const updatedComment = await Comment.findByPk(id, {
       include: [
-        { 
-          model: User, 
-          as: 'user', 
-          attributes: ['id', 'username', 'role'] 
-        }
+        { model: User, as: 'user', attributes: ['id', 'username', 'role'] }
       ]
     });
 
@@ -104,12 +86,8 @@ const deleteComment = async (req, res) => {
     const userId = req.user.id;
 
     const comment = await Comment.findByPk(id);
-    
-    if (!comment) {
-      return res.status(404).json({ error: 'Comment not found' });
-    }
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
-    // Check if user owns the comment
     if (comment.userId !== userId) {
       return res.status(403).json({ error: 'You can only delete your own comments' });
     }
