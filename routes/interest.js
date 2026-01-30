@@ -1,24 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+
+const authenticate = require('../middleware/auth'); // ✅ correct (default export)
+
 const {
   expressInterest,
   getMyInterests,
   getIdeaInterests,
   removeInterest
-} = require('../controller/interestcontroller');
-
+} = require('../controller/interestcontroller'); // ✅ casing fixed
 
 // Express interest (authenticated investors)
-router.post("/interest", expressInterest);
+router.post('/interest', authenticate, expressInterest);
 
-// Get my interests (authenticated investors)
+// Get my interests
 router.get('/my-interests', authenticate, getMyInterests);
 
-// Get interests for a specific idea (authenticated idea owners)
+// Get interests for a specific idea
 router.get('/idea/:ideaId', authenticate, getIdeaInterests);
 
-// Remove interest (authenticated)
+// Remove interest
 router.delete('/:id', authenticate, removeInterest);
 
 module.exports = router;
