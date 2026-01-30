@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const ideaRoutes = require('./routes/idea');
 const interestRoutes = require('./routes/interest');
 const commentRoutes = require('./routes/comment');
+const adminRoutes = require('./routes/admin');
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/idea", ideaRoutes);
 app.use("/api/interest", interestRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => res.send("IdeaLink API is running..."));
 

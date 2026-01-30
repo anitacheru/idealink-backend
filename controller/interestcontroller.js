@@ -1,94 +1,118 @@
 const { Interest, Idea, User } = require('../models');
 
-// Handler for investor expressing interest in an idea
+// Express interest in an idea
 const expressInterest = async (req, res) => {
   try {
-    console.log("req.user:", req.user);       // Debug: shows authenticated user
-    console.log("req.body:", req.body);       // Debug: shows body from frontend
-
     const { ideaId } = req.body;
+    const investorId = req.user.id;
 
-    // Validate ideaId
-    if (!ideaId) {
-      return res.status(400).json({ error: "ideaId is required" });
-    }
-
-    // Prevent duplicate interests
-    const existing = await Interest.findOne({ 
-      where: { ideaId, investorId: req.user.id } 
-    });
-    if (existing) {
-      return res.status(400).json({ error: "You have already expressed interest in this idea." });
-    }
-
-    // Create new interest
-    const interest = await Interest.create({ 
-      ideaId, 
-      investorId: req.user.id, 
-      status: "pending" 
+    // Check if investor already expressed interest
+    const existingInterest = await Interest.findOne({
+      where: { ideaId, investorId }
     });
 
-    res.status(201).json(interest);
+    if (existingInterest) {
+      return res.status(400).json({ 
+        error: 'You have already expressed interest in this idea' 
+      });
+    }
 
+    // Create interest
+    const interest = await Interest.create({
+      ideaId,
+      investorId
+    });
+
+    // Get updated idea with interest count
+    const idea = await Idea.findByPk(ideaId, {
+      include: [{ model: Interest, as: 'interests' }]
+    });
+
+    res.status(201).json({
+      message: 'Interest expressed successfully',
+      interest,
+      interestCount: idea.interests.length
+    });
   } catch (err) {
-    console.error("Error in expressInterest:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Handler for listing interests with idea interest count
-const getInterests = async (req, res) => {
+// Get all interests for a specific investor
+const getMyInterests = async (req, res) => {
   try {
+    const investorId = req.user.id;
+    
     const interests = await Interest.findAll({
-      where: { investorId: req.user.id },
+      where: { investorId },
       include: [
-        { model: Idea, as: 'idea', include: [{ model: Interest, as: 'interests', attributes: [] }] },
-        { model: User, as: 'investor', attributes: ['username', 'email'] }
-      ]
+        { 
+          model: Idea, 
+          as: 'idea',
+          include: [
+            { model: User, as: 'author', attributes: ['id', 'username', 'email'] }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
     });
 
-    // Add interestCount to each idea
-    const enriched = interests.map(inter => {
-      const obj = inter.toJSON();
-      if (obj.idea) {
-        obj.idea.interestCount = Array.isArray(obj.idea.interests) ? obj.idea.interests.length : 0;
-      }
-      return obj;
-    });
-
-    res.json(enriched);
+    res.json(interests);
   } catch (err) {
-    console.error("Error in getInterests:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Handler for updating interest status (accept/reject)
-const updateInterest = async (req, res) => {
+// Get all interests for a specific idea (for idea owners)
+const getIdeaInterests = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { ideaId } = req.params;
+    
+    const interests = await Interest.findAll({
+      where: { ideaId },
+      include: [
+        { 
+          model: User, 
+          as: 'investor', 
+          attributes: ['id', 'username', 'email'] 
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
 
-    if (!status || !['pending', 'accepted', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: "Invalid status value" });
-    }
-
-    const interest = await Interest.findByPk(req.params.id);
-    if (!interest) {
-      return res.status(404).json({ error: "Interest not found" });
-    }
-
-    interest.status = status;
-    await interest.save();
-
-    res.json({ msg: "Interest updated", interest });
+    res.json(interests);
   } catch (err) {
-    console.error("Error in updateInterest:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Remove interest
+const removeInterest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const investorId = req.user.id;
+
+    const interest = await Interest.findByPk(id);
+    
+    if (!interest) {
+      return res.status(404).json({ error: 'Interest not found' });
+    }
+
+    // Check if user owns the interest
+    if (interest.investorId !== investorId) {
+      return res.status(403).json({ error: 'Not authorized to remove this interest' });
+    }
+
+    await interest.destroy();
+    res.json({ message: 'Interest removed successfully' });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 module.exports = {
   expressInterest,
-  getInterests,
-  updateInterest
+  getMyInterests,
+  getIdeaInterests,
+  removeInterest
 };
