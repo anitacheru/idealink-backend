@@ -8,6 +8,7 @@ const {
   removeInterest
 } = require('../controller/interestcontroller');
 
+
 // Express interest (authenticated investors)
 router.post("/interest", expressInterest);
 
