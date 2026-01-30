@@ -9,7 +9,7 @@ const {
 } = require('../controller/interestcontroller');
 
 // Express interest (authenticated investors)
-router.post('/', authenticate, expressInterest);
+router.post("/interest", expressInterest);
 
 // Get my interests (authenticated investors)
 router.get('/my-interests', authenticate, getMyInterests);
