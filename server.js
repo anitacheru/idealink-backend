@@ -40,9 +40,10 @@ app.get("/", (req, res) => res.send("IdeaLink API is running..."));
 // Sync DB and start server
 const PORT = process.env.PORT || 5000;
 
-sequelize.sync()
+// 🔥 FORCE SYNC - This will update the database schema
+sequelize.sync({ alter: true })  // ← CHANGED THIS LINE
   .then(() => {
-    console.log("✅ Database synced");
+    console.log("✅ Database synced with { alter: true }");
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
